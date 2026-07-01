@@ -1,38 +1,77 @@
-# To run and test the code you need to update 4 places:
-# 1. Change MY_EMAIL/MY_PASSWORD to your own details.
-# 2. Go to your email provider and make it allow less secure apps.
-# 3. Update the SMTP ADDRESS to match your email provider.
-# 4. Update birthdays.csv to contain today's month and day.
-# See the solution video in the 100 Days of Python Course for explainations.
-
-
-from datetime import datetime
-import pandas
-import random
+import csv
+import datetime as dt
 import smtplib
-import os
+import random
 
-# import os and use it to get the Github repository secrets
-MY_EMAIL = os.environ.get("MY_EMAIL")
-MY_PASSWORD = os.environ.get("MY_PASSWORD")
-
-today = datetime.now()
-today_tuple = (today.month, today.day)
-
-data = pandas.read_csv("birthdays.csv")
-birthdays_dict = {(data_row["month"], data_row["day"])                  : data_row for (index, data_row) in data.iterrows()}
-if today_tuple in birthdays_dict:
-    birthday_person = birthdays_dict[today_tuple]
-    file_path = f"letter_templates/letter_{random.randint(1, 3)}.txt"
-    with open(file_path) as letter_file:
-        contents = letter_file.read()
-        contents = contents.replace("[NAME]", birthday_person["name"])
-
-    with smtplib.SMTP("YOUR EMAIL PROVIDER SMTP SERVER ADDRESS") as connection:
+#--------------------------------------Globals------------------------------------------#
+sender_email = "maxshahnazaryan774@gmail.com"
+sender_password = "wwan ypey bolm aavk"
+sender_email_smtp = 'smtp.gmail.com'
+file_1 = "../letter_templates/letter_1.txt"
+file_2 = "../letter_templates/letter_2.txt"
+file_3 = "../letter_templates/letter_3.txt"
+text_templates = [file_1, file_2, file_3]
+#-------------------------------------Functions-----------------------------------------#
+def load_birthdays():
+    with open("birthdays.csv", "r", encoding="utf-8") as data:
+        reader = csv.DictReader(data)
+        all_data = []
+        for row in reader:
+            all_data.append(row)
+        return all_data
+def find_birthday():
+    data = load_birthdays()
+    now = dt.datetime.now()
+    month = now.month
+    day = now.day
+    if not data:
+        print("No data, func: find_birthday")
+        return None
+    matches = []
+    for item in data:
+        if int(item["month"]) == month and int(item["day"]) == day:
+            matches.append(item)
+    if not matches:
+        print("No matches, func: find_birthday")
+        return None
+    return matches
+def load_text_templates():
+    try:
+        with open(f"{random.choice(text_templates)}", "r", encoding="utf-8") as file:
+            original_text = file.read()
+    except FileNotFoundError:
+        original_text = """Dear [NAME],\n\nHappy birthday!\n\nAll the best for the year!\n\nAngela"""
+    return original_text
+def change_text(name, text):
+    new_text = text.replace("[NAME]", name)
+    return new_text
+def send_email(recipient, letter):
+    with smtplib.SMTP(sender_email_smtp) as connection:
         connection.starttls()
-        connection.login(MY_EMAIL, MY_PASSWORD)
-        connection.sendmail(
-            from_addr=MY_EMAIL,
-            to_addrs=birthday_person["email"],
-            msg=f"Subject:Happy Birthday!\n\n{contents}"
-        )
+        connection.login(sender_email, sender_password)
+        connection.sendmail(from_addr=sender_email,
+                            to_addrs=recipient,
+                            msg=f"Subject: Happy birthday!\n\n"
+                                f"{letter}")
+def main():
+    birthdays = find_birthday()
+    if not birthdays:
+        print("No birthdays")
+        return
+    for birthday in birthdays:
+        name = birthday["name"]
+        email = birthday["email"]
+        text = change_text(name, load_text_templates())
+        send_email(email, text)
+        print(f"Sent email to {name}")
+main()
+
+
+
+
+
+
+
+
+
+
