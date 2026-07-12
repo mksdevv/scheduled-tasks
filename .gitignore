@@ -4,6 +4,12 @@
 secrets.txt
 credentials.json
 
+# Weather script runtime files
+sent_messages.log
+.weather_state/
+weather_data.json
+*.log
+
 # Python
 __pycache__/
 *.py[cod]
