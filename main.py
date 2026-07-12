@@ -198,9 +198,6 @@ def main():
     if not WEATHER_API_KEY:
         print("WEATHER_API_KEY environment variable is missing.")
         return
-    if not MY_LAT or not MY_LONG:
-        print("MY_LAT or MY_LONG environment variable is missing.")
-        return
     data = get_weather_data_with_delay()
     if not data:
         return
