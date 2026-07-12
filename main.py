@@ -11,8 +11,8 @@ from twilio.rest import Client
 RAIN_WARNING_HOURS = 12
 MIN_WARNING_MINUTES = 30
 
-MY_LAT = float(os.environ.get("MY_LAT", 41.06))
-MY_LONG = float(os.environ.get("MY_LONG", 44.61))
+MY_LAT = float(os.environ.get("MY_LAT") or 41.06)
+MY_LONG = float(os.environ.get("MY_LONG") or 44.61)
 
 UNIT = "metric"
 FORECAST_COUNT = 10
