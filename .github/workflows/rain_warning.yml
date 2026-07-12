@@ -3,7 +3,7 @@ name: Rain Warning
 on:
   schedule:
     # Run once every hour, at minute 17
-    - cron: "50 * * * *"
+    - cron: "2 * * * *"
 
   # Allows manual testing from the Actions page
   workflow_dispatch:
