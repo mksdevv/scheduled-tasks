@@ -1,0 +1,55 @@
+name: Rain Warning
+
+on:
+  schedule:
+    # Run once every hour, at minute 17
+    - cron: "17 * * * *"
+
+  # Allows manual testing from the Actions page
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rain-warning
+  cancel-in-progress: false
+
+jobs:
+  check-weather:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore message history
+        uses: actions/cache@v6
+        with:
+          path: .weather_state
+          key: rain-warning-${{ github.run_id }}
+          restore-keys: |
+            rain-warning-
+
+      - name: Run weather warning
+        env:
+          WEATHER_API_KEY: ${{ secrets.WEATHER_API_KEY }}
+          TWILIO_ACCOUNT_SID: ${{ secrets.TWILIO_ACCOUNT_SID }}
+          TWILIO_AUTH_TOKEN: ${{ secrets.TWILIO_AUTH_TOKEN }}
+          TWILIO_PHONE_NUMBER: ${{ secrets.TWILIO_PHONE_NUMBER }}
+          RECEIVER_PHONE_NUMBER: ${{ secrets.RECEIVER_PHONE_NUMBER }}
+          MY_LAT: ${{ secrets.MY_LAT }}
+          MY_LONG: ${{ secrets.MY_LONG }}
+
+          SEND_SMS: "true"
+          MESSAGES_LOG_FILE: ".weather_state/sent_messages.log"
+
+        run: python main.py
